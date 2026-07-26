@@ -1,4 +1,4 @@
-import { resolveSpringConfig, springToWAAPIKeyframes, type SpringPreset, type SpringConfig } from './spring';
+import { resolveSpringConfig, springToWAAPIKeyframes, type SpringPreset, type SpringConfig, type AnimationVariant } from './spring';
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -7,6 +7,7 @@ function prefersReducedMotion(): boolean {
 export interface AnimateConfig {
   spring?: SpringPreset | SpringConfig;
   duration?: number;
+  animation?: AnimationVariant;
 }
 
 const EXIT_MAX_DURATION = 400;
@@ -16,10 +17,12 @@ export function animateIn(
   panelEl: HTMLElement,
   config?: AnimateConfig,
 ): Animation[] {
-  if (prefersReducedMotion()) {
+  const variant = config?.animation ?? 'scale';
+
+  if (prefersReducedMotion() || variant === 'none') {
     backdropEl.style.opacity = '1';
     panelEl.style.opacity = '1';
-    panelEl.style.transform = 'scale(1)';
+    panelEl.style.transform = 'none';
     return [];
   }
 
@@ -30,7 +33,7 @@ export function animateIn(
     stiffness: springConfig.stiffness * 0.8,
   });
 
-  const { keyframes: panelKF, duration: panelDur } = springToWAAPIKeyframes(0, 1, 'transform', springConfig);
+  const { keyframes: panelKF, duration: panelDur } = springToWAAPIKeyframes(0, 1, 'transform', springConfig, { variant });
 
   const backdropAnim = backdropEl.animate(backdropKF, {
     duration: backdropDur,
@@ -52,7 +55,9 @@ export function animateOut(
   panelEl: HTMLElement,
   config?: AnimateConfig,
 ): Promise<void> {
-  if (prefersReducedMotion()) {
+  const variant = config?.animation ?? 'scale';
+
+  if (prefersReducedMotion() || variant === 'none') {
     return Promise.resolve();
   }
 
@@ -70,6 +75,7 @@ export function animateOut(
 
   const { keyframes: panelKF, duration: panelDur } = springToWAAPIKeyframes(1, 0, 'transform', exitConfig, {
     maxDuration: EXIT_MAX_DURATION,
+    variant,
   });
 
   const backdropAnim = backdropEl.animate(backdropKF, {

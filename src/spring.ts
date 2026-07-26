@@ -6,6 +6,8 @@ export interface SpringConfig {
 
 export type SpringPreset = 'default' | 'gentle' | 'wobbly' | 'stiff' | 'slow';
 
+export type AnimationVariant = 'scale' | 'slide-bottom' | 'slide-top' | 'slide-left' | 'slide-right' | 'fade' | 'none';
+
 const PRESETS: Record<SpringPreset, SpringConfig> = {
   default: { stiffness: 100, damping: 10, mass: 1 },
   gentle: { stiffness: 100, damping: 20, mass: 1 },
@@ -81,29 +83,75 @@ export interface WAAPIKeyframeOptions {
   maxDuration?: number;
 }
 
+function buildTransformKeyframes(
+  positions: number[],
+  variant: AnimationVariant,
+): Keyframe[] {
+  return positions.map((pos, i) => {
+    const offset = i / (positions.length - 1);
+
+    switch (variant) {
+      case 'fade':
+        return { opacity: String(pos), offset } as Keyframe;
+
+      case 'scale':
+        return {
+          transform: `scale(${0.95 + 0.05 * pos})`,
+          opacity: String(pos),
+          offset,
+        } as Keyframe;
+
+      case 'slide-bottom':
+        return {
+          transform: `translateY(${(1 - pos) * 100}%)`,
+          opacity: String(pos),
+          offset,
+        } as Keyframe;
+
+      case 'slide-top':
+        return {
+          transform: `translateY(${(pos - 1) * 100}%)`,
+          opacity: String(pos),
+          offset,
+        } as Keyframe;
+
+      case 'slide-left':
+        return {
+          transform: `translateX(${(pos - 1) * 100}%)`,
+          opacity: String(pos),
+          offset,
+        } as Keyframe;
+
+      case 'slide-right':
+        return {
+          transform: `translateX(${(1 - pos) * 100}%)`,
+          opacity: String(pos),
+          offset,
+        } as Keyframe;
+
+      default:
+        return { opacity: String(pos), offset } as Keyframe;
+    }
+  });
+}
+
 export function springToWAAPIKeyframes(
   fromValue: number,
   toValue: number,
   property: 'opacity' | 'transform',
   config: SpringConfig,
-  options?: WAAPIKeyframeOptions,
+  options?: WAAPIKeyframeOptions & { variant?: AnimationVariant },
 ): { keyframes: Keyframe[]; duration: number } {
   const { keyframes: positions, duration } = generateSpringKeyframes(fromValue, toValue, config, options);
 
-  const waapiKeyframes: Keyframe[] = positions.map((pos, i) => {
-    const offset = i / (positions.length - 1);
-
-    if (property === 'opacity') {
-      return { opacity: String(pos), offset } as Keyframe;
-    }
-
-    const scale = 0.95 + 0.05 * pos;
-    return {
-      transform: `scale(${scale})`,
+  if (property === 'opacity') {
+    const keyframes = positions.map((pos, i) => ({
       opacity: String(pos),
-      offset,
-    } as Keyframe;
-  });
+      offset: i / (positions.length - 1),
+    })) as Keyframe[];
+    return { keyframes, duration };
+  }
 
-  return { keyframes: waapiKeyframes, duration };
+  const variant = options?.variant ?? 'scale';
+  return { keyframes: buildTransformKeyframes(positions, variant), duration };
 }

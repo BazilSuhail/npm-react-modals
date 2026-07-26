@@ -1,11 +1,12 @@
 import { createContext, useContext } from 'react';
-import type { SpringPreset, SpringConfig } from './spring';
+import type { SpringPreset, SpringConfig, AnimationVariant } from './spring';
 
 export interface ModalContextValue {
   open: boolean;
   onClose: () => void;
   onOpen: () => void;
   spring?: SpringPreset | SpringConfig;
+  animation?: AnimationVariant;
   backdropColor?: string;
   backdropBlur?: number;
   size?: 'sm' | 'md' | 'lg' | 'xl';

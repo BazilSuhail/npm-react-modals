@@ -4,12 +4,13 @@ import { useModalContext } from './ModalContext';
 import { animateIn, animateOut } from './animate';
 import { useEscapeKey } from './hooks/useEscapeKey';
 import { useClickOutside } from './hooks/useClickOutside';
-import type { SpringPreset, SpringConfig } from './spring';
+import type { SpringPreset, SpringConfig, AnimationVariant } from './spring';
 
 export interface ModalContentProps {
   children: ReactNode;
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  animation?: AnimationVariant;
   closeOnBackdropClick?: boolean;
   closeOnEscape?: boolean;
   backdropColor?: string;
@@ -24,6 +25,7 @@ export default function ModalContent({
   children,
   className,
   size: sizeProp,
+  animation: animationProp,
   closeOnBackdropClick = true,
   closeOnEscape = true,
   backdropColor,
@@ -33,6 +35,7 @@ export default function ModalContent({
 }: ModalContentProps) {
   const ctx = useModalContext();
   const size = sizeProp ?? ctx.size ?? 'md';
+  const resolvedAnimation = animationProp ?? ctx.animation ?? 'scale';
   const resolvedBackdropColor = backdropColor ?? ctx.backdropColor ?? 'rgba(0, 0, 0, 0.6)';
   const resolvedBackdropBlur = backdropBlur ?? ctx.backdropBlur ?? 4;
   const resolvedSpring = spring ?? ctx.spring;
@@ -70,6 +73,7 @@ export default function ModalContent({
           if (backdropRef.current && panelRef.current) {
             animateIn(backdropRef.current, panelRef.current, {
               spring: resolvedSpring,
+              animation: resolvedAnimation,
               duration: animationDuration,
             });
             setTimeout(() => {
@@ -96,6 +100,7 @@ export default function ModalContent({
       if (backdropRef.current && panelRef.current) {
         animateOut(backdropRef.current, panelRef.current, {
           spring: resolvedSpring,
+          animation: resolvedAnimation,
           duration: animationDuration,
         }).then(unmount);
       } else {
@@ -105,7 +110,7 @@ export default function ModalContent({
     prevOpen.current = ctx.open;
 
     return clearSafetyTimer;
-  }, [ctx.open, resolvedSpring, animationDuration, clearSafetyTimer]);
+  }, [ctx.open, resolvedSpring, resolvedAnimation, animationDuration, clearSafetyTimer]);
 
   if (!render) return null;
 

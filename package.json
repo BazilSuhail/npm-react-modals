@@ -19,9 +19,7 @@
     },
     "./styles.css": "./dist/styles.css"
   },
-  "sideEffects": [
-    "*.css"
-  ],
+  "sideEffects": false,
   "files": [
     "dist"
   ],

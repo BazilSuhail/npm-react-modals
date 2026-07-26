@@ -1,6 +1,6 @@
 import { useState, useCallback, type ReactNode } from 'react';
 import { ModalContext, type ModalContextValue } from './ModalContext';
-import type { SpringPreset, SpringConfig } from './spring';
+import type { SpringPreset, SpringConfig, AnimationVariant } from './spring';
 
 export interface ModalProps {
   children: ReactNode;
@@ -8,6 +8,7 @@ export interface ModalProps {
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   spring?: SpringPreset | SpringConfig;
+  animation?: AnimationVariant;
   backdropColor?: string;
   backdropBlur?: number;
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -20,6 +21,7 @@ export default function Modal({
   defaultOpen = false,
   onOpenChange,
   spring,
+  animation,
   backdropColor,
   backdropBlur,
   size,
@@ -53,6 +55,7 @@ export default function Modal({
     onClose,
     onOpen,
     spring,
+    animation,
     backdropColor,
     backdropBlur,
     size,

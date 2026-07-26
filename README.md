@@ -1,10 +1,17 @@
 # entity-react-modals
 
+[![npm version](https://img.shields.io/npm/v/entity-react-modals.svg)](https://www.npmjs.com/package/entity-react-modals)
+[![npm downloads](https://img.shields.io/npm/dm/entity-react-modals.svg)](https://www.npmjs.com/package/entity-react-modals)
+[![license](https://img.shields.io/npm/l/entity-react-modals.svg)](https://github.com/BazilSuhail/npm-react-modals/blob/main/LICENSE)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/entity-react-modals)](https://bundlephobia.com/package/entity-react-modals)
+[![typescript](https://img.shields.io/badge/typescript-ready-blue.svg)](https://www.typescriptlang.org/)
+
 Zero-dependency React modal library with spring physics animations powered by the Web Animations API.
 
-- No animation libraries required — uses native WAAPI
+- **7 animation variants** — scale, slide, fade, none
+- **5 spring presets** — default, gentle, wobbly, stiff, slow
+- Zero-config — styles auto-injected, no CSS import needed
 - Compound component API for flexible composition
-- 5 built-in spring presets + custom spring configs
 - Controlled and uncontrolled modes
 - Portal-rendered, accessible, and tree-shakable
 
@@ -26,7 +33,6 @@ import {
   ModalFooter,
   ModalClose,
 } from 'entity-react-modals';
-import 'entity-react-modals/styles.css';
 
 function App() {
   return (
@@ -74,7 +80,8 @@ function App() {
 | `open` | `boolean` | — | Controlled open state. |
 | `defaultOpen` | `boolean` | `false` | Initial open state for uncontrolled mode. |
 | `onOpenChange` | `(open: boolean) => void` | — | Called when open state changes. |
-| `spring` | `SpringPreset \| SpringConfig` | `'default'` | Spring animation config. |
+| `animation` | `AnimationVariant` | `'scale'` | Animation variant. |
+| `spring` | `SpringPreset \| SpringConfig` | `'default'` | Spring physics config. |
 | `backdropColor` | `string` | `'rgba(0,0,0,0.6)'` | Backdrop background color. |
 | `backdropBlur` | `number` | `4` | Backdrop blur radius in px. |
 | `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Panel max-width preset. |
@@ -87,7 +94,9 @@ Props set on `ModalContent` override those set on `Modal` for that specific cont
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `children` | `ReactNode` | — | Modal panel content. |
+| `className` | `string` | — | Additional CSS class on the panel. |
 | `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Panel max-width. |
+| `animation` | `AnimationVariant` | `'scale'` | Animation variant. |
 | `closeOnBackdropClick` | `boolean` | `true` | Close when clicking the backdrop. |
 | `closeOnEscape` | `boolean` | `true` | Close on Escape key press. |
 | `backdropColor` | `string` | — | Override backdrop color. |
@@ -108,6 +117,184 @@ Props set on `ModalContent` override those set on `Modal` for that specific cont
 |---|---|---|
 | `children` | `ReactNode` | Section content. |
 | `className` | `string` | Additional CSS class. |
+
+## Animation Variants
+
+| Variant | Effect |
+|---|---|
+| `scale` | Scale from 0.95 to 1 (default) |
+| `slide-bottom` | Slide up from below |
+| `slide-top` | Slide down from above |
+| `slide-left` | Slide in from left |
+| `slide-right` | Slide in from right |
+| `fade` | Opacity only, no transform |
+| `none` | Instant, no animation |
+
+```tsx
+// Set on Modal (applies to all content)
+<Modal animation="slide-bottom">...</Modal>
+
+// Set on ModalContent (overrides Modal)
+<ModalContent animation="slide-left" spring="gentle">...</ModalContent>
+
+// Disable animation entirely
+<ModalContent animation="none">...</ModalContent>
+```
+
+### Real-World Example: Notification Toast
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Show Notification</button>
+  </ModalTrigger>
+  <ModalContent size="sm" animation="slide-bottom" spring="stiff"
+    backdropColor="rgba(0, 0, 0, 0.3)" backdropBlur={4}>
+    <div style={{ padding: '24px', textAlign: 'center' }}>
+      <h3>Success!</h3>
+      <p>Your changes have been saved.</p>
+      <ModalClose>Done</ModalClose>
+    </div>
+  </ModalContent>
+</Modal>
+```
+
+### Real-World Example: Settings Panel
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Settings</button>
+  </ModalTrigger>
+  <ModalContent size="lg" animation="slide-left" spring="default"
+    backdropColor="rgba(0, 0, 0, 0.4)" backdropBlur={8}>
+    <ModalHeader>
+      <h2>Settings</h2>
+      <ModalClose />
+    </ModalHeader>
+    <ModalBody>
+      {/* Toggle sections, forms, danger zones */}
+    </ModalBody>
+  </ModalContent>
+</Modal>
+```
+
+### Real-World Example: Command Palette
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Search</button>
+  </ModalTrigger>
+  <ModalContent size="md" animation="scale" spring="stiff"
+    backdropColor="rgba(0, 0, 0, 0.6)" backdropBlur={8}>
+    <div style={{ padding: '12px' }}>
+      <input type="text" placeholder="Search commands..." autoFocus />
+      {/* Command list */}
+    </div>
+  </ModalContent>
+</Modal>
+```
+
+### Real-World Example: Payment Form
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Upgrade to Pro</button>
+  </ModalTrigger>
+  <ModalContent size="md" spring="gentle"
+    backdropColor="rgba(0, 0, 0, 0.5)" backdropBlur={6}>
+    <ModalHeader>
+      <h2>Upgrade to Pro</h2>
+      <ModalClose />
+    </ModalHeader>
+    <ModalBody>
+      <p>$49 / one time</p>
+      {/* Card form */}
+    </ModalBody>
+    <ModalFooter>
+      <ModalClose>Cancel</ModalClose>
+      <button>Pay $49</button>
+    </ModalFooter>
+  </ModalContent>
+</Modal>
+```
+
+### Real-World Example: Image Viewer
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>View Image</button>
+  </ModalTrigger>
+  <ModalContent size="xl" animation="scale" spring="gentle"
+    backdropColor="rgba(0, 0, 0, 0.85)" backdropBlur={12}>
+    <ModalClose />
+    {/* Full-width image content */}
+  </ModalContent>
+</Modal>
+```
+
+### Real-World Example: Destructive Alert
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Delete Account</button>
+  </ModalTrigger>
+  <ModalContent size="sm" animation="slide-top" spring="stiff"
+    backdropColor="rgba(0, 0, 0, 0.6)" backdropBlur={4}>
+    <div style={{ padding: '24px', textAlign: 'center' }}>
+      <h3>Are you sure?</h3>
+      <p>This action cannot be undone.</p>
+      <ModalClose>Cancel</ModalClose>
+      <button style={{ background: '#ef4444', color: 'white' }}>
+        Yes, delete everything
+      </button>
+    </div>
+  </ModalContent>
+</Modal>
+```
+
+### Real-World Example: Login Form
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Sign in</button>
+  </ModalTrigger>
+  <ModalContent size="sm" animation="slide-bottom" spring="gentle"
+    backdropColor="rgba(16, 185, 129, 0.15)" backdropBlur={12}>
+    <div style={{ padding: '24px' }}>
+      <h3>Welcome back</h3>
+      <input type="email" placeholder="you@example.com" />
+      <input type="password" placeholder="Password" />
+      <button>Sign in</button>
+    </div>
+  </ModalContent>
+</Modal>
+```
+
+### Real-World Example: Pricing Cards
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>View Pricing</button>
+  </ModalTrigger>
+  <ModalContent size="lg" animation="slide-right" spring="wobbly"
+    backdropColor="rgba(0, 0, 0, 0.5)" backdropBlur={8}>
+    <ModalHeader>
+      <h2>Choose your plan</h2>
+      <ModalClose />
+    </ModalHeader>
+    <ModalBody>
+      {/* Three-column pricing cards */}
+    </ModalBody>
+  </ModalContent>
+</Modal>
+```
 
 ## Sizes
 
@@ -151,15 +338,6 @@ Pass a `SpringConfig` object to fine-tune the animation:
 | `stiffness` | Spring stiffness. Higher = faster response. |
 | `damping` | Damping force. Higher = less oscillation. |
 | `mass` | Mass of the animated object. Lower = lighter feel. |
-
-Spring config can also be set on the `Modal` root and it applies to all content panels:
-
-```tsx
-<Modal spring={{ stiffness: 300, damping: 15, mass: 0.8 }}>
-  <ModalTrigger>...</ModalTrigger>
-  <ModalContent>...</ModalContent>
-</Modal>
-```
 
 ## Controlled Mode
 
@@ -261,9 +439,9 @@ function App() {
 
       <Modal>
         <ModalTrigger><button>Second</button></ModalTrigger>
-        <ModalContent size="lg" spring="gentle">
+        <ModalContent size="lg" animation="slide-left" spring="gentle">
           <ModalHeader><h2>Second Modal</h2><ModalClose /></ModalHeader>
-          <ModalBody>Different size and spring</ModalBody>
+          <ModalBody>Different size, animation, and spring</ModalBody>
         </ModalContent>
       </Modal>
     </>
@@ -310,12 +488,13 @@ import type {
   ModalFooterProps,
   SpringConfig,
   SpringPreset,
+  AnimationVariant,
 } from 'entity-react-modals';
 ```
 
 ## Tree Shaking
 
-The package uses the `exports` field with conditional ESM/CJS builds and marks CSS as the only side effect. Bundlers will tree-shake unused components automatically.
+The package uses the `exports` field with conditional ESM/CJS builds and `sideEffects: false`. Styles are auto-injected on first import. Bundlers will tree-shake unused components automatically.
 
 ```tsx
 // Only imports what you use
