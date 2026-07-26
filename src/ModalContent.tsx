@@ -8,6 +8,7 @@ import type { SpringPreset, SpringConfig } from './spring';
 
 export interface ModalContentProps {
   children: ReactNode;
+  className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   closeOnBackdropClick?: boolean;
   closeOnEscape?: boolean;
@@ -17,17 +18,11 @@ export interface ModalContentProps {
   animationDuration?: number;
 }
 
-const SIZE_MAP = {
-  sm: '400px',
-  md: '560px',
-  lg: '720px',
-  xl: '900px',
-};
-
 const SAFETY_UNMOUNT_MS = 600;
 
 export default function ModalContent({
   children,
+  className,
   size: sizeProp,
   closeOnBackdropClick = true,
   closeOnEscape = true,
@@ -131,10 +126,9 @@ export default function ModalContent({
     >
       <div
         ref={setRefs}
-        className={`rm-panel rm-panel--${size}`}
+        className={`rm-panel rm-panel--${size}${className ? ` ${className}` : ''}`}
         role="dialog"
         aria-modal="true"
-        style={{ maxWidth: SIZE_MAP[size] }}
       >
         {children}
       </div>

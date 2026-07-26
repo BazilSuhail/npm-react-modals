@@ -27,9 +27,11 @@
   border-radius: var(--rm-panel-radius);
   box-shadow: var(--rm-panel-shadow);
   width: 100%;
+  max-height: calc(100vh - 40px);
   opacity: 0;
   transform: scale(0.95);
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .rm-panel--sm { max-width: 400px; }
@@ -43,6 +45,7 @@
   justify-content: space-between;
   padding: 16px 20px;
   border-bottom: 1px solid var(--rm-header-border);
+  flex-shrink: 0;
 }
 
 .rm-header h2,
@@ -56,7 +59,8 @@
 .rm-body {
   padding: 20px;
   overflow-y: auto;
-  max-height: calc(100vh - 200px);
+  flex: 1;
+  min-height: 0;
 }
 
 .rm-footer {
@@ -66,6 +70,7 @@
   gap: 8px;
   padding: 16px 20px;
   border-top: 1px solid var(--rm-footer-border);
+  flex-shrink: 0;
 }
 
 .rm-close {
