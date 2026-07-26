@@ -21,7 +21,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build package
         run: npm run build
@@ -36,6 +36,6 @@ jobs:
           if npm view "$PKG_NAME@$VERSION" version > /dev/null 2>&1; then
             echo "Version $VERSION is already published. Skipping."
           else
-            npm publish
+            npm publish --access public
             echo "Successfully published version $VERSION!"
           fi
