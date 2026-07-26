@@ -1,4 +1,4 @@
-# @bazil/react-modals
+# entity-react-modals
 
 Zero-dependency React modal library with spring physics animations powered by the Web Animations API.
 
@@ -11,7 +11,7 @@ Zero-dependency React modal library with spring physics animations powered by th
 ## Install
 
 ```bash
-npm install @bazil/react-modals
+npm install entity-react-modals
 ```
 
 ## Quick Start
@@ -25,8 +25,8 @@ import {
   ModalBody,
   ModalFooter,
   ModalClose,
-} from '@bazil/react-modals';
-import '@bazil/react-modals/styles.css';
+} from 'entity-react-modals';
+import 'entity-react-modals/styles.css';
 
 function App() {
   return (
@@ -310,7 +310,7 @@ import type {
   ModalFooterProps,
   SpringConfig,
   SpringPreset,
-} from '@bazil/react-modals';
+} from 'entity-react-modals';
 ```
 
 ## Tree Shaking
@@ -319,7 +319,7 @@ The package uses the `exports` field with conditional ESM/CJS builds and marks C
 
 ```tsx
 // Only imports what you use
-import { Modal, ModalContent } from '@bazil/react-modals';
+import { Modal, ModalContent } from 'entity-react-modals';
 ```
 
 ## License

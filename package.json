@@ -1,5 +1,5 @@
 {
-  "name": "@bazil/react-modals",
+  "name": "entity-react-modals",
   "version": "1.0.0",
   "description": "Zero-dependency React modal library with spring physics animations via WAAPI",
   "type": "module",
@@ -57,10 +57,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bazil/react-modals"
+    "url": "git+https://github.com/BazilSuhail/npm-react-modals.git"
   },
   "publishConfig": {
-    "access": "public"
+    "registry": "https://registry.npmjs.org"
   },
   "engines": {
     "node": ">=18"
