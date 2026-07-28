@@ -121,12 +121,12 @@ export default function ModalContent({
     return clearSafetyTimer;
   }, [ctx.open, resolvedSpring, resolvedAnimation, animationDuration, clearSafetyTimer]);
 
-  if (!mounted || !render) return null;
-
   const setRefs = useCallback((el: HTMLDivElement | null) => {
     clickOutsideRef.current = el;
     (panelRef as MutableRefObject<HTMLDivElement | null>).current = el;
   }, [clickOutsideRef]);
+
+  if (!mounted || !render) return null;
 
   return createPortal(
     <div
@@ -140,9 +140,12 @@ export default function ModalContent({
     >
       <div
         ref={setRefs}
+        id={ctx.dialogId}
         className={`rm-panel rm-panel--${size}${className ? ` ${className}` : ''}`}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={ctx.labelledById}
+        aria-describedby={ctx.describedById}
       >
         {children}
       </div>

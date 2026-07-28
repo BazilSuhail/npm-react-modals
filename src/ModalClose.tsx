@@ -7,10 +7,16 @@ export interface ModalCloseProps {
 }
 
 export default function ModalClose({ children = '×', className }: ModalCloseProps) {
-  const { onClose } = useModalContext();
+  const { onClose, dialogId } = useModalContext();
 
   return (
-    <button type="button" className={`rm-close ${className ?? ''}`} onClick={onClose} aria-label="Close">
+    <button
+      type="button"
+      className={`rm-close ${className ?? ''}`}
+      onClick={onClose}
+      aria-label="Close"
+      aria-controls={dialogId}
+    >
       {children}
     </button>
   );

@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useId, useEffect, type ReactNode } from 'react';
+import { useModalContext } from './ModalContext';
 
 export interface ModalHeaderProps {
   children: ReactNode;
@@ -6,5 +7,17 @@ export interface ModalHeaderProps {
 }
 
 export default function ModalHeader({ children, className }: ModalHeaderProps) {
-  return <div className={`rm-header ${className ?? ''}`}>{children}</div>;
+  const id = useId();
+  const { setLabelledById } = useModalContext();
+
+  useEffect(() => {
+    setLabelledById(id);
+    return () => setLabelledById(undefined);
+  }, [id, setLabelledById]);
+
+  return (
+    <div id={id} className={`rm-header ${className ?? ''}`}>
+      {children}
+    </div>
+  );
 }

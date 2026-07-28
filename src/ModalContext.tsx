@@ -11,6 +11,11 @@ export interface ModalContextValue {
   backdropBlur?: number;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   animationDuration?: number;
+  dialogId: string;
+  labelledById?: string;
+  describedById?: string;
+  setLabelledById: (id: string | undefined) => void;
+  setDescribedById: (id: string | undefined) => void;
 }
 
 export const ModalContext = createContext<ModalContextValue | null>(null);

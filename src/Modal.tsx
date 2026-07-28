@@ -1,4 +1,4 @@
-import { useState, useCallback, type ReactNode } from 'react';
+import { useState, useCallback, useId, type ReactNode } from 'react';
 import { ModalContext, type ModalContextValue } from './ModalContext';
 import type { SpringPreset, SpringConfig, AnimationVariant } from './spring';
 
@@ -28,6 +28,9 @@ export default function Modal({
   animationDuration,
 }: ModalProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const dialogId = useId();
+  const [labelledById, setLabelledById] = useState<string | undefined>(undefined);
+  const [describedById, setDescribedById] = useState<string | undefined>(undefined);
 
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
@@ -60,6 +63,11 @@ export default function Modal({
     backdropBlur,
     size,
     animationDuration,
+    dialogId,
+    labelledById,
+    describedById,
+    setLabelledById,
+    setDescribedById,
   };
 
   return <ModalContext.Provider value={value}>{children}</ModalContext.Provider>;
