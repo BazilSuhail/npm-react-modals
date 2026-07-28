@@ -10,6 +10,11 @@ Zero-dependency React modal library with spring physics animations powered by th
 
 - **7 animation variants** — scale, slide, fade, none
 - **5 spring presets** — default, gentle, wobbly, stiff, slow
+- **Focus management** — auto-focus, return focus, `initialFocusRef`/`finalFocusRef`
+- **Force mount** — keep modal in DOM for CSS transitions
+- **Scroll lock** — `preventScroll` with reference-counted body overflow
+- **Event callbacks** — `onEscapeKeyDown`, `onInteractOutside`, `onOpenAutoFocus`, `onCloseAutoFocus`
+- **`data-state` attributes** — style open/closed states with CSS
 - Zero-config — styles auto-injected, no CSS import needed
 - Compound component API for flexible composition
 - Controlled and uncontrolled modes
@@ -62,13 +67,13 @@ function App() {
 
 | Component | Purpose |
 |---|---|
-| `Modal` | Root provider. Manages open/close state and passes config to children via context. |
-| `ModalTrigger` | Wraps an element to open the modal on click. Clones child and injects `onClick`. |
-| `ModalContent` | The dialog panel. Renders via portal to `document.body`. Handles animations, backdrop, escape, click-outside. |
-| `ModalHeader` | Layout wrapper for the header section. |
-| `ModalBody` | Layout wrapper for the body content. |
+| `Modal` | Root provider. Manages open/close state, focus management, and passes config to children via context. |
+| `ModalTrigger` | Wraps an element to open the modal on click. Injects `ref`, `aria-controls`, `aria-haspopup`. |
+| `ModalContent` | The dialog panel. Renders via portal. Handles animations, backdrop, escape, click-outside, focus trap, scroll lock. |
+| `ModalHeader` | Layout wrapper for the header. Auto-registers as `aria-labelledby`. |
+| `ModalBody` | Layout wrapper for the body. Auto-registers as `aria-describedby`. |
 | `ModalFooter` | Layout wrapper for the footer actions. |
-| `ModalClose` | Button that closes the modal. Defaults to `×` character. |
+| `ModalClose` | Button that closes the modal. Injects `aria-controls`. |
 
 ## Props
 
@@ -86,6 +91,14 @@ function App() {
 | `backdropBlur` | `number` | `4` | Backdrop blur radius in px. |
 | `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Panel max-width preset. |
 | `animationDuration` | `number` | — | Override computed spring duration in ms. |
+| `preventScroll` | `boolean` | `false` | Lock body scroll when modal is open. |
+| `forceMount` | `boolean` | `false` | Always render modal in DOM (useful for CSS transitions). |
+| `initialFocusRef` | `RefObject<HTMLElement>` | — | Focus this element on open instead of first focusable. |
+| `finalFocusRef` | `RefObject<HTMLElement>` | — | Focus this element on close instead of trigger. |
+| `onOpenAutoFocus` | `(e: { preventDefault: () => void }) => void` | — | Called on open focus. Call `preventDefault()` to skip auto-focus. |
+| `onCloseAutoFocus` | `(e: { preventDefault: () => void }) => void` | — | Called on close focus. Call `preventDefault()` to skip return focus. |
+| `onEscapeKeyDown` | `(e: KeyboardEvent) => void` | — | Called on Escape keydown. Call `preventDefault()` to prevent close. |
+| `onInteractOutside` | `(e: MouseEvent) => void` | — | Called on backdrop click. Call `preventDefault()` to prevent close. |
 
 ### ModalContent
 
@@ -103,6 +116,7 @@ Props set on `ModalContent` override those set on `Modal` for that specific cont
 | `backdropBlur` | `number` | — | Override backdrop blur. |
 | `spring` | `SpringPreset \| SpringConfig` | — | Override spring config. |
 | `animationDuration` | `number` | — | Override animation duration. |
+| `preventScroll` | `boolean` | — | Override scroll lock. |
 
 ### ModalClose
 
@@ -141,161 +155,6 @@ Props set on `ModalContent` override those set on `Modal` for that specific cont
 <ModalContent animation="none">...</ModalContent>
 ```
 
-### Real-World Example: Notification Toast
-
-```tsx
-<Modal>
-  <ModalTrigger>
-    <button>Show Notification</button>
-  </ModalTrigger>
-  <ModalContent size="sm" animation="slide-bottom" spring="stiff"
-    backdropColor="rgba(0, 0, 0, 0.3)" backdropBlur={4}>
-    <div style={{ padding: '24px', textAlign: 'center' }}>
-      <h3>Success!</h3>
-      <p>Your changes have been saved.</p>
-      <ModalClose>Done</ModalClose>
-    </div>
-  </ModalContent>
-</Modal>
-```
-
-### Real-World Example: Settings Panel
-
-```tsx
-<Modal>
-  <ModalTrigger>
-    <button>Settings</button>
-  </ModalTrigger>
-  <ModalContent size="lg" animation="slide-left" spring="default"
-    backdropColor="rgba(0, 0, 0, 0.4)" backdropBlur={8}>
-    <ModalHeader>
-      <h2>Settings</h2>
-      <ModalClose />
-    </ModalHeader>
-    <ModalBody>
-      {/* Toggle sections, forms, danger zones */}
-    </ModalBody>
-  </ModalContent>
-</Modal>
-```
-
-### Real-World Example: Command Palette
-
-```tsx
-<Modal>
-  <ModalTrigger>
-    <button>Search</button>
-  </ModalTrigger>
-  <ModalContent size="md" animation="scale" spring="stiff"
-    backdropColor="rgba(0, 0, 0, 0.6)" backdropBlur={8}>
-    <div style={{ padding: '12px' }}>
-      <input type="text" placeholder="Search commands..." autoFocus />
-      {/* Command list */}
-    </div>
-  </ModalContent>
-</Modal>
-```
-
-### Real-World Example: Payment Form
-
-```tsx
-<Modal>
-  <ModalTrigger>
-    <button>Upgrade to Pro</button>
-  </ModalTrigger>
-  <ModalContent size="md" spring="gentle"
-    backdropColor="rgba(0, 0, 0, 0.5)" backdropBlur={6}>
-    <ModalHeader>
-      <h2>Upgrade to Pro</h2>
-      <ModalClose />
-    </ModalHeader>
-    <ModalBody>
-      <p>$49 / one time</p>
-      {/* Card form */}
-    </ModalBody>
-    <ModalFooter>
-      <ModalClose>Cancel</ModalClose>
-      <button>Pay $49</button>
-    </ModalFooter>
-  </ModalContent>
-</Modal>
-```
-
-### Real-World Example: Image Viewer
-
-```tsx
-<Modal>
-  <ModalTrigger>
-    <button>View Image</button>
-  </ModalTrigger>
-  <ModalContent size="xl" animation="scale" spring="gentle"
-    backdropColor="rgba(0, 0, 0, 0.85)" backdropBlur={12}>
-    <ModalClose />
-    {/* Full-width image content */}
-  </ModalContent>
-</Modal>
-```
-
-### Real-World Example: Destructive Alert
-
-```tsx
-<Modal>
-  <ModalTrigger>
-    <button>Delete Account</button>
-  </ModalTrigger>
-  <ModalContent size="sm" animation="slide-top" spring="stiff"
-    backdropColor="rgba(0, 0, 0, 0.6)" backdropBlur={4}>
-    <div style={{ padding: '24px', textAlign: 'center' }}>
-      <h3>Are you sure?</h3>
-      <p>This action cannot be undone.</p>
-      <ModalClose>Cancel</ModalClose>
-      <button style={{ background: '#ef4444', color: 'white' }}>
-        Yes, delete everything
-      </button>
-    </div>
-  </ModalContent>
-</Modal>
-```
-
-### Real-World Example: Login Form
-
-```tsx
-<Modal>
-  <ModalTrigger>
-    <button>Sign in</button>
-  </ModalTrigger>
-  <ModalContent size="sm" animation="slide-bottom" spring="gentle"
-    backdropColor="rgba(16, 185, 129, 0.15)" backdropBlur={12}>
-    <div style={{ padding: '24px' }}>
-      <h3>Welcome back</h3>
-      <input type="email" placeholder="you@example.com" />
-      <input type="password" placeholder="Password" />
-      <button>Sign in</button>
-    </div>
-  </ModalContent>
-</Modal>
-```
-
-### Real-World Example: Pricing Cards
-
-```tsx
-<Modal>
-  <ModalTrigger>
-    <button>View Pricing</button>
-  </ModalTrigger>
-  <ModalContent size="lg" animation="slide-right" spring="wobbly"
-    backdropColor="rgba(0, 0, 0, 0.5)" backdropBlur={8}>
-    <ModalHeader>
-      <h2>Choose your plan</h2>
-      <ModalClose />
-    </ModalHeader>
-    <ModalBody>
-      {/* Three-column pricing cards */}
-    </ModalBody>
-  </ModalContent>
-</Modal>
-```
-
 ## Sizes
 
 | Size | Max Width |
@@ -304,10 +163,6 @@ Props set on `ModalContent` override those set on `Modal` for that specific cont
 | `md` | 560px |
 | `lg` | 720px |
 | `xl` | 900px |
-
-```tsx
-<ModalContent size="lg">...</ModalContent>
-```
 
 ## Spring Presets
 
@@ -338,6 +193,115 @@ Pass a `SpringConfig` object to fine-tune the animation:
 | `stiffness` | Spring stiffness. Higher = faster response. |
 | `damping` | Damping force. Higher = less oscillation. |
 | `mass` | Mass of the animated object. Lower = lighter feel. |
+
+## Focus Management
+
+Focus is automatically trapped inside the modal. On open, the first focusable element receives focus. On close, focus returns to the trigger button.
+
+### Custom Focus Targets
+
+```tsx
+const initialRef = useRef(null);
+const finalRef = useRef(null);
+
+<Modal initialFocusRef={initialRef} finalFocusRef={finalRef}>
+  <ModalTrigger>
+    <button ref={finalRef}>Open</button>
+  </ModalTrigger>
+  <ModalContent>
+    <input ref={initialRef} autoFocus />
+  </ModalContent>
+</Modal>
+```
+
+### Prevent Auto-Focus
+
+```tsx
+<Modal
+  onOpenAutoFocus={(e) => e.preventDefault()}
+  onCloseAutoFocus={(e) => e.preventDefault()}
+>
+  ...
+</Modal>
+```
+
+## Event Callbacks
+
+### Prevent Close on Escape
+
+```tsx
+<Modal
+  onEscapeKeyDown={(e) => {
+    if (someCondition) e.preventDefault();
+  }}
+>
+  ...
+</Modal>
+```
+
+### Prevent Close on Backdrop Click
+
+```tsx
+<Modal
+  onInteractOutside={(e) => {
+    if (someCondition) e.preventDefault();
+  }}
+>
+  ...
+</Modal>
+```
+
+## Force Mount
+
+Keep the modal in the DOM even when closed. Useful for CSS transitions or enter/leave animations.
+
+```tsx
+<Modal forceMount>
+  <ModalTrigger>
+    <button>Open</button>
+  </ModalTrigger>
+  <ModalContent>
+    {/* Always in DOM, visibility toggled via data-state */}
+  </ModalContent>
+</Modal>
+```
+
+When `forceMount` is set:
+- Modal is always rendered in the portal
+- `data-state="closed"` hides with `visibility: hidden` and `pointer-events: none`
+- `data-state="open"` shows normally
+
+## Prevent Scroll
+
+Lock body scroll when the modal is open. Uses reference counting so nested modals work correctly.
+
+```tsx
+<Modal preventScroll>
+  <ModalTrigger>
+    <button>Open</button>
+  </ModalTrigger>
+  <ModalContent>
+    <ModalBody>
+      {/* Body scroll is locked */}
+    </ModalBody>
+  </ModalContent>
+</Modal>
+```
+
+## Data State Attributes
+
+Both `rm-backdrop` and `rm-panel` have `data-state` attributes for CSS styling:
+
+```css
+/* Style based on open/closed state */
+.rm-panel[data-state="open"] {
+  opacity: 1;
+}
+
+.rm-panel[data-state="closed"] {
+  opacity: 0;
+}
+```
 
 ## Controlled Mode
 
@@ -466,16 +430,179 @@ Override these in your CSS to theme the modals globally:
 }
 ```
 
+## Real-World Examples
+
+### Notification Toast
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Show Notification</button>
+  </ModalTrigger>
+  <ModalContent size="sm" animation="slide-bottom" spring="stiff"
+    backdropColor="rgba(0, 0, 0, 0.3)" backdropBlur={4}>
+    <div style={{ padding: '24px', textAlign: 'center' }}>
+      <h3>Success!</h3>
+      <p>Your changes have been saved.</p>
+      <ModalClose>Done</ModalClose>
+    </div>
+  </ModalContent>
+</Modal>
+```
+
+### Settings Panel
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Settings</button>
+  </ModalTrigger>
+  <ModalContent size="lg" animation="slide-left" spring="default"
+    backdropColor="rgba(0, 0, 0, 0.4)" backdropBlur={8}>
+    <ModalHeader>
+      <h2>Settings</h2>
+      <ModalClose />
+    </ModalHeader>
+    <ModalBody>
+      {/* Toggle sections, forms, danger zones */}
+    </ModalBody>
+  </ModalContent>
+</Modal>
+```
+
+### Command Palette
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Search</button>
+  </ModalTrigger>
+  <ModalContent size="md" animation="scale" spring="stiff"
+    backdropColor="rgba(0, 0, 0, 0.6)" backdropBlur={8}>
+    <div style={{ padding: '12px' }}>
+      <input type="text" placeholder="Search commands..." autoFocus />
+      {/* Command list */}
+    </div>
+  </ModalContent>
+</Modal>
+```
+
+### Payment Form
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Upgrade to Pro</button>
+  </ModalTrigger>
+  <ModalContent size="md" spring="gentle"
+    backdropColor="rgba(0, 0, 0, 0.5)" backdropBlur={6}>
+    <ModalHeader>
+      <h2>Upgrade to Pro</h2>
+      <ModalClose />
+    </ModalHeader>
+    <ModalBody>
+      <p>$49 / one time</p>
+      {/* Card form */}
+    </ModalBody>
+    <ModalFooter>
+      <ModalClose>Cancel</ModalClose>
+      <button>Pay $49</button>
+    </ModalFooter>
+  </ModalContent>
+</Modal>
+```
+
+### Image Viewer
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>View Image</button>
+  </ModalTrigger>
+  <ModalContent size="xl" animation="scale" spring="gentle"
+    backdropColor="rgba(0, 0, 0, 0.85)" backdropBlur={12}>
+    <ModalClose />
+    {/* Full-width image content */}
+  </ModalContent>
+</Modal>
+```
+
+### Destructive Alert
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Delete Account</button>
+  </ModalTrigger>
+  <ModalContent size="sm" animation="slide-top" spring="stiff"
+    backdropColor="rgba(0, 0, 0, 0.6)" backdropBlur={4}>
+    <div style={{ padding: '24px', textAlign: 'center' }}>
+      <h3>Are you sure?</h3>
+      <p>This action cannot be undone.</p>
+      <ModalClose>Cancel</ModalClose>
+      <button style={{ background: '#ef4444', color: 'white' }}>
+        Yes, delete everything
+      </button>
+    </div>
+  </ModalContent>
+</Modal>
+```
+
+### Login Form
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>Sign in</button>
+  </ModalTrigger>
+  <ModalContent size="sm" animation="slide-bottom" spring="gentle"
+    backdropColor="rgba(16, 185, 129, 0.15)" backdropBlur={12}>
+    <div style={{ padding: '24px' }}>
+      <h3>Welcome back</h3>
+      <input type="email" placeholder="you@example.com" />
+      <input type="password" placeholder="Password" />
+      <button>Sign in</button>
+    </div>
+  </ModalContent>
+</Modal>
+```
+
+### Pricing Cards
+
+```tsx
+<Modal>
+  <ModalTrigger>
+    <button>View Pricing</button>
+  </ModalTrigger>
+  <ModalContent size="lg" animation="slide-right" spring="wobbly"
+    backdropColor="rgba(0, 0, 0, 0.5)" backdropBlur={8}>
+    <ModalHeader>
+      <h2>Choose your plan</h2>
+      <ModalClose />
+    </ModalHeader>
+    <ModalBody>
+      {/* Three-column pricing cards */}
+    </ModalBody>
+  </ModalContent>
+</Modal>
+```
+
 ## Accessibility
 
 - `role="dialog"` and `aria-modal="true"` on the panel
-- `aria-label="Close"` on the close button
+- `aria-labelledby` linking to `ModalHeader` via `useId`
+- `aria-describedby` linking to `ModalBody` via `useId`
+- `aria-controls` on trigger and close button linking to dialog
+- `aria-haspopup="dialog"` on trigger
+- `aria-label="Close"` on close button
 - Focus trapped within the modal via backdrop click and escape handling
+- Auto-focus on open, return focus on close
 - Respects `prefers-reduced-motion: reduce` — animations are skipped entirely
+- `data-state="open"` / `data-state="closed"` for CSS-based styling
 
 ## TypeScript
 
-All component props and spring types are fully typed and exported:
+All component props, spring types, and animation types are fully typed and exported:
 
 ```tsx
 import type {
@@ -489,6 +616,7 @@ import type {
   SpringConfig,
   SpringPreset,
   AnimationVariant,
+  AnimateConfig,
 } from 'entity-react-modals';
 ```
 
