@@ -1,4 +1,4 @@
-import { useState, useCallback, useId, useRef, type ReactNode, type RefObject } from 'react';
+import { useState, useCallback, useId, useRef, type ReactNode, type RefObject, type CSSProperties } from 'react';
 import { ModalContext, type ModalContextValue } from './ModalContext';
 import type { SpringPreset, SpringConfig, AnimationVariant } from './spring';
 
@@ -15,6 +15,9 @@ export interface ModalProps {
   animationDuration?: number;
   preventScroll?: boolean;
   forceMount?: boolean;
+  zIndex?: number;
+  className?: string;
+  style?: CSSProperties;
   initialFocusRef?: RefObject<HTMLElement>;
   finalFocusRef?: RefObject<HTMLElement>;
   onOpenAutoFocus?: (e: { preventDefault: () => void }) => void;
@@ -36,6 +39,9 @@ export default function Modal({
   animationDuration,
   preventScroll,
   forceMount,
+  zIndex,
+  className,
+  style,
   initialFocusRef,
   finalFocusRef,
   onOpenAutoFocus,
@@ -82,6 +88,7 @@ export default function Modal({
     animationDuration,
     preventScroll,
     forceMount,
+    zIndex,
     initialFocusRef,
     finalFocusRef,
     onOpenAutoFocus,
@@ -96,5 +103,11 @@ export default function Modal({
     triggerRef,
   };
 
-  return <ModalContext.Provider value={value}>{children}</ModalContext.Provider>;
+  const content = <ModalContext.Provider value={value}>{children}</ModalContext.Provider>;
+
+  if (className || style) {
+    return <div className={className} style={style}>{content}</div>;
+  }
+
+  return content;
 }

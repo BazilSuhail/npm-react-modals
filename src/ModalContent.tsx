@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, type MutableRefObject, type ReactNode } from 'react';
+import { useState, useRef, useCallback, useEffect, type MutableRefObject, type ReactNode, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { useModalContext } from './ModalContext';
 import { animateIn, animateOut } from './animate';
@@ -33,6 +33,7 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 export interface ModalContentProps {
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   animation?: AnimationVariant;
   closeOnBackdropClick?: boolean;
@@ -49,6 +50,7 @@ const SAFETY_UNMOUNT_MS = 600;
 export default function ModalContent({
   children,
   className,
+  style,
   size: sizeProp,
   animation: animationProp,
   closeOnBackdropClick = true,
@@ -204,6 +206,7 @@ export default function ModalContent({
       ref={backdropRef}
       data-state={dataState}
       style={{
+        zIndex: ctx.zIndex ?? 9998,
         background: resolvedBackdropColor,
         backdropFilter: `blur(${resolvedBackdropBlur}px)`,
         WebkitBackdropFilter: `blur(${resolvedBackdropBlur}px)`,
@@ -219,7 +222,11 @@ export default function ModalContent({
         aria-labelledby={ctx.labelledById}
         aria-describedby={ctx.describedById}
         data-state={dataState}
-        style={resolvedForceMount && !isOpen ? { pointerEvents: 'none' as const } : undefined}
+        style={{
+          zIndex: (ctx.zIndex ?? 9998) + 1,
+          ...(resolvedForceMount && !isOpen ? { pointerEvents: 'none' as const } : {}),
+          ...style,
+        }}
       >
         {children}
       </div>

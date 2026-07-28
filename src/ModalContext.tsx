@@ -13,6 +13,7 @@ export interface ModalContextValue {
   animationDuration?: number;
   preventScroll?: boolean;
   forceMount?: boolean;
+  zIndex?: number;
   initialFocusRef?: RefObject<HTMLElement>;
   finalFocusRef?: RefObject<HTMLElement>;
   onOpenAutoFocus?: (e: { preventDefault: () => void }) => void;
