@@ -41,6 +41,11 @@ export default function ModalContent({
   const resolvedSpring = spring ?? ctx.spring;
 
   const [render, setRender] = useState(ctx.open);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const backdropRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -71,14 +76,18 @@ export default function ModalContent({
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           if (backdropRef.current && panelRef.current) {
-            animateIn(backdropRef.current, panelRef.current, {
+            const anims = animateIn(backdropRef.current, panelRef.current, {
               spring: resolvedSpring,
               animation: resolvedAnimation,
               duration: animationDuration,
             });
-            setTimeout(() => {
+            if (anims.length > 0) {
+              Promise.all(anims.map((a) => a.finished)).then(() => {
+                animatingRef.current = false;
+              });
+            } else {
               animatingRef.current = false;
-            }, 500);
+            }
           }
         });
       });
@@ -112,12 +121,12 @@ export default function ModalContent({
     return clearSafetyTimer;
   }, [ctx.open, resolvedSpring, resolvedAnimation, animationDuration, clearSafetyTimer]);
 
-  if (!render) return null;
+  if (!mounted || !render) return null;
 
-  const setRefs = (el: HTMLDivElement | null) => {
+  const setRefs = useCallback((el: HTMLDivElement | null) => {
     clickOutsideRef.current = el;
     (panelRef as MutableRefObject<HTMLDivElement | null>).current = el;
-  };
+  }, [clickOutsideRef]);
 
   return createPortal(
     <div

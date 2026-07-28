@@ -10,7 +10,7 @@ export default function ModalClose({ children = '×', className }: ModalClosePro
   const { onClose } = useModalContext();
 
   return (
-    <button className={`rm-close ${className ?? ''}`} onClick={onClose} aria-label="Close">
+    <button type="button" className={`rm-close ${className ?? ''}`} onClick={onClose} aria-label="Close">
       {children}
     </button>
   );

@@ -1,6 +1,7 @@
 import { resolveSpringConfig, springToWAAPIKeyframes, type SpringPreset, type SpringConfig, type AnimationVariant } from './spring';
 
 function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined') return false;
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
@@ -28,12 +29,17 @@ export function animateIn(
 
   const springConfig = resolveSpringConfig(config?.spring);
 
+  const maxDur = config?.duration;
+
   const { keyframes: backdropKF, duration: backdropDur } = springToWAAPIKeyframes(0, 1, 'opacity', {
     ...springConfig,
     stiffness: springConfig.stiffness * 0.8,
-  });
+  }, { maxDuration: maxDur });
 
-  const { keyframes: panelKF, duration: panelDur } = springToWAAPIKeyframes(0, 1, 'transform', springConfig, { variant });
+  const { keyframes: panelKF, duration: panelDur } = springToWAAPIKeyframes(0, 1, 'transform', springConfig, {
+    maxDuration: maxDur,
+    variant,
+  });
 
   const backdropAnim = backdropEl.animate(backdropKF, {
     duration: backdropDur,
@@ -68,13 +74,15 @@ export function animateOut(
     mass: springConfig.mass,
   };
 
+  const exitMaxDur = config?.duration ?? EXIT_MAX_DURATION;
+
   const { keyframes: backdropKF, duration: backdropDur } = springToWAAPIKeyframes(1, 0, 'opacity', {
     ...exitConfig,
     stiffness: exitConfig.stiffness * 0.8,
-  }, { maxDuration: EXIT_MAX_DURATION });
+  }, { maxDuration: exitMaxDur });
 
   const { keyframes: panelKF, duration: panelDur } = springToWAAPIKeyframes(1, 0, 'transform', exitConfig, {
-    maxDuration: EXIT_MAX_DURATION,
+    maxDuration: exitMaxDur,
     variant,
   });
 
