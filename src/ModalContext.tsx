@@ -11,6 +11,7 @@ export interface ModalContextValue {
   backdropBlur?: number;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   animationDuration?: number;
+  preventScroll?: boolean;
   dialogId: string;
   labelledById?: string;
   describedById?: string;

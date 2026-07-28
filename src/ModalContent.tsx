@@ -6,6 +6,25 @@ import { useEscapeKey } from './hooks/useEscapeKey';
 import { useClickOutside } from './hooks/useClickOutside';
 import type { SpringPreset, SpringConfig, AnimationVariant } from './spring';
 
+let scrollLockCount = 0;
+let savedOverflow = '';
+
+function lockScroll() {
+  if (scrollLockCount === 0) {
+    savedOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+  }
+  scrollLockCount++;
+}
+
+function unlockScroll() {
+  scrollLockCount--;
+  if (scrollLockCount <= 0) {
+    scrollLockCount = 0;
+    document.body.style.overflow = savedOverflow;
+  }
+}
+
 export interface ModalContentProps {
   children: ReactNode;
   className?: string;
@@ -17,6 +36,7 @@ export interface ModalContentProps {
   backdropBlur?: number;
   spring?: SpringPreset | SpringConfig;
   animationDuration?: number;
+  preventScroll?: boolean;
 }
 
 const SAFETY_UNMOUNT_MS = 600;
@@ -32,6 +52,7 @@ export default function ModalContent({
   backdropBlur,
   spring,
   animationDuration,
+  preventScroll: preventScrollProp,
 }: ModalContentProps) {
   const ctx = useModalContext();
   const size = sizeProp ?? ctx.size ?? 'md';
@@ -39,6 +60,7 @@ export default function ModalContent({
   const resolvedBackdropColor = backdropColor ?? ctx.backdropColor ?? 'rgba(0, 0, 0, 0.6)';
   const resolvedBackdropBlur = backdropBlur ?? ctx.backdropBlur ?? 4;
   const resolvedSpring = spring ?? ctx.spring;
+  const resolvedPreventScroll = preventScrollProp ?? ctx.preventScroll ?? false;
 
   const [render, setRender] = useState(ctx.open);
   const [mounted, setMounted] = useState(false);
@@ -61,7 +83,6 @@ export default function ModalContent({
   }, []);
 
   const handleClose = useCallback(() => {
-    if (animatingRef.current) return;
     ctx.onClose();
   }, [ctx]);
 
@@ -120,6 +141,15 @@ export default function ModalContent({
 
     return clearSafetyTimer;
   }, [ctx.open, resolvedSpring, resolvedAnimation, animationDuration, clearSafetyTimer]);
+
+  useEffect(() => {
+    if (!resolvedPreventScroll || typeof document === 'undefined') return;
+
+    if (ctx.open) {
+      lockScroll();
+      return () => unlockScroll();
+    }
+  }, [ctx.open, resolvedPreventScroll]);
 
   const setRefs = useCallback((el: HTMLDivElement | null) => {
     clickOutsideRef.current = el;

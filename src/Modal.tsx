@@ -13,6 +13,7 @@ export interface ModalProps {
   backdropBlur?: number;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   animationDuration?: number;
+  preventScroll?: boolean;
 }
 
 export default function Modal({
@@ -26,6 +27,7 @@ export default function Modal({
   backdropBlur,
   size,
   animationDuration,
+  preventScroll,
 }: ModalProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const dialogId = useId();
@@ -63,6 +65,7 @@ export default function Modal({
     backdropBlur,
     size,
     animationDuration,
+    preventScroll,
     dialogId,
     labelledById,
     describedById,
