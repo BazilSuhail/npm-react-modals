@@ -147,10 +147,6 @@ export default function ModalContent({
     } else if (!ctx.open && prevOpen.current) {
       animatingRef.current = true;
 
-      if (backdropRef.current) {
-        backdropRef.current.style.pointerEvents = 'none';
-      }
-
       const unmount = () => {
         clearSafetyTimer();
         setRender(resolvedForceMount);

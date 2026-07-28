@@ -17,7 +17,10 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  opacity: 0;
+}
+
+.rm-backdrop[data-state="closed"] {
+  pointer-events: none;
 }
 
 .rm-panel {
@@ -32,6 +35,10 @@
   transform: scale(0.95);
   display: flex;
   flex-direction: column;
+}
+
+.rm-panel[data-state="closed"] {
+  pointer-events: none;
 }
 
 .rm-panel--sm { max-width: 400px; }
