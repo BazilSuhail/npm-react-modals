@@ -25,6 +25,11 @@ function unlockScroll() {
   }
 }
 
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const selectors = 'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  return Array.from(container.querySelectorAll(selectors)) as HTMLElement[];
+}
+
 export interface ModalContentProps {
   children: ReactNode;
   className?: string;
@@ -61,8 +66,9 @@ export default function ModalContent({
   const resolvedBackdropBlur = backdropBlur ?? ctx.backdropBlur ?? 4;
   const resolvedSpring = spring ?? ctx.spring;
   const resolvedPreventScroll = preventScrollProp ?? ctx.preventScroll ?? false;
+  const resolvedForceMount = ctx.forceMount ?? false;
 
-  const [render, setRender] = useState(ctx.open);
+  const [render, setRender] = useState(resolvedForceMount || ctx.open);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -86,8 +92,20 @@ export default function ModalContent({
     ctx.onClose();
   }, [ctx]);
 
-  useEscapeKey(closeOnEscape && ctx.open, handleClose);
-  const clickOutsideRef = useClickOutside(closeOnBackdropClick && ctx.open, handleClose);
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    ctx.onEscapeKeyDown?.(e);
+    if (e.defaultPrevented) return;
+    handleClose();
+  }, [ctx, handleClose]);
+
+  const handleInteractOutside = useCallback((e: MouseEvent) => {
+    ctx.onInteractOutside?.(e);
+    if (e.defaultPrevented) return;
+    handleClose();
+  }, [ctx, handleClose]);
+
+  useEscapeKey(closeOnEscape && ctx.open, handleEscape);
+  const clickOutsideRef = useClickOutside(closeOnBackdropClick && ctx.open, handleInteractOutside);
 
   useEffect(() => {
     if (ctx.open && !prevOpen.current) {
@@ -109,6 +127,18 @@ export default function ModalContent({
             } else {
               animatingRef.current = false;
             }
+
+            const focusEvent = { defaultPrevented: false, preventDefault() { focusEvent.defaultPrevented = true; } };
+            ctx.onOpenAutoFocus?.(focusEvent);
+            if (!focusEvent.defaultPrevented) {
+              const autoFocusTarget = ctx.initialFocusRef?.current;
+              if (autoFocusTarget) {
+                autoFocusTarget.focus();
+              } else {
+                const focusable = getFocusableElements(panelRef.current);
+                focusable[0]?.focus();
+              }
+            }
           }
         });
       });
@@ -121,8 +151,15 @@ export default function ModalContent({
 
       const unmount = () => {
         clearSafetyTimer();
-        setRender(false);
+        setRender(resolvedForceMount);
         animatingRef.current = false;
+
+        const focusEvent = { defaultPrevented: false, preventDefault() { focusEvent.defaultPrevented = true; } };
+        ctx.onCloseAutoFocus?.(focusEvent);
+        if (!focusEvent.defaultPrevented) {
+          const returnTarget = ctx.finalFocusRef?.current ?? ctx.triggerRef.current;
+          returnTarget?.focus();
+        }
       };
 
       safetyTimerRef.current = setTimeout(unmount, SAFETY_UNMOUNT_MS);
@@ -140,7 +177,7 @@ export default function ModalContent({
     prevOpen.current = ctx.open;
 
     return clearSafetyTimer;
-  }, [ctx.open, resolvedSpring, resolvedAnimation, animationDuration, clearSafetyTimer]);
+  }, [ctx.open, resolvedSpring, resolvedAnimation, animationDuration, clearSafetyTimer, resolvedForceMount, ctx]);
 
   useEffect(() => {
     if (!resolvedPreventScroll || typeof document === 'undefined') return;
@@ -156,16 +193,21 @@ export default function ModalContent({
     (panelRef as MutableRefObject<HTMLDivElement | null>).current = el;
   }, [clickOutsideRef]);
 
-  if (!mounted || !render) return null;
+  if (!mounted) return null;
 
-  return createPortal(
+  const isOpen = ctx.open;
+  const dataState = isOpen ? 'open' : 'closed';
+
+  const content = (
     <div
       className="rm-backdrop"
       ref={backdropRef}
+      data-state={dataState}
       style={{
         background: resolvedBackdropColor,
         backdropFilter: `blur(${resolvedBackdropBlur}px)`,
         WebkitBackdropFilter: `blur(${resolvedBackdropBlur}px)`,
+        visibility: resolvedForceMount && !isOpen ? 'hidden' : undefined,
       }}
     >
       <div
@@ -176,10 +218,19 @@ export default function ModalContent({
         aria-modal="true"
         aria-labelledby={ctx.labelledById}
         aria-describedby={ctx.describedById}
+        data-state={dataState}
+        style={resolvedForceMount && !isOpen ? { pointerEvents: 'none' as const } : undefined}
       >
         {children}
       </div>
-    </div>,
-    document.body,
+    </div>
   );
+
+  if (resolvedForceMount) {
+    if (!render) setRender(true);
+    return createPortal(content, document.body);
+  }
+
+  if (!render) return null;
+  return createPortal(content, document.body);
 }

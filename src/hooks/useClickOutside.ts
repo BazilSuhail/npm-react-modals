@@ -1,13 +1,16 @@
 import { useEffect, useRef, useCallback } from 'react';
 
-export function useClickOutside(enabled: boolean, onClick: () => void) {
+export function useClickOutside(
+  enabled: boolean,
+  onClick: (e: MouseEvent) => void,
+) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const handleClick = useCallback(
     (e: MouseEvent) => {
       if (!enabled || !panelRef.current) return;
       if (!panelRef.current.contains(e.target as Node)) {
-        onClick();
+        onClick(e);
       }
     },
     [enabled, onClick],

@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, type RefObject } from 'react';
 import type { SpringPreset, SpringConfig, AnimationVariant } from './spring';
 
 export interface ModalContextValue {
@@ -12,11 +12,19 @@ export interface ModalContextValue {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   animationDuration?: number;
   preventScroll?: boolean;
+  forceMount?: boolean;
+  initialFocusRef?: RefObject<HTMLElement>;
+  finalFocusRef?: RefObject<HTMLElement>;
+  onOpenAutoFocus?: (e: { preventDefault: () => void }) => void;
+  onCloseAutoFocus?: (e: { preventDefault: () => void }) => void;
+  onEscapeKeyDown?: (e: KeyboardEvent) => void;
+  onInteractOutside?: (e: MouseEvent) => void;
   dialogId: string;
   labelledById?: string;
   describedById?: string;
   setLabelledById: (id: string | undefined) => void;
   setDescribedById: (id: string | undefined) => void;
+  triggerRef: RefObject<HTMLButtonElement | null>;
 }
 
 export const ModalContext = createContext<ModalContextValue | null>(null);

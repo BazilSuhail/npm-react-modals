@@ -1,4 +1,4 @@
-import { cloneElement, isValidElement, type ReactNode } from 'react';
+import { cloneElement, isValidElement, useCallback, type ReactNode } from 'react';
 import { useModalContext } from './ModalContext';
 
 export interface ModalTriggerProps {
@@ -6,9 +6,14 @@ export interface ModalTriggerProps {
 }
 
 export default function ModalTrigger({ children }: ModalTriggerProps) {
-  const { onOpen, dialogId } = useModalContext();
+  const { onOpen, dialogId, triggerRef } = useModalContext();
+
+  const setTriggerRef = useCallback((el: HTMLButtonElement | null) => {
+    (triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = el;
+  }, [triggerRef]);
 
   const triggerProps = {
+    ref: setTriggerRef,
     'aria-controls': dialogId,
     'aria-haspopup': 'dialog' as const,
   };

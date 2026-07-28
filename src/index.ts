@@ -20,3 +20,4 @@ export type { ModalBodyProps } from './ModalBody';
 export type { ModalFooterProps } from './ModalFooter';
 
 export type { SpringConfig, SpringPreset, AnimationVariant } from './spring';
+export type { AnimateConfig } from './animate';
