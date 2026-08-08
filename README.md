@@ -20,6 +20,8 @@ Zero-dependency React modal library with spring physics animations powered by th
 - Controlled and uncontrolled modes
 - Portal-rendered, accessible, and tree-shakable
 
+<video src="https://raw.githubusercontent.com/Lord-Entity/Bazil-Suhail-Repos/main/react-modals.mp4" autoplay loop muted playsinline disablePictureInPicture style="pointer-events: none; width: 100%;"></video>
+
 ## Install
 
 ```bash
@@ -631,4 +633,4 @@ import { Modal, ModalContent } from 'entity-react-modals';
 
 ## License
 
-MIT
+[MIT License](LICENSE)

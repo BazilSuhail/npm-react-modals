@@ -80,7 +80,8 @@ export default function ModalContent({
   const backdropRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const animatingRef = useRef(false);
-  const prevOpen = useRef(ctx.open);
+  const prevOpen = useRef(false);
+  const transitionIdRef = useRef(0);
   const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearSafetyTimer = useCallback(() => {
@@ -92,30 +93,58 @@ export default function ModalContent({
 
   const handleClose = useCallback(() => {
     ctx.onClose();
-  }, [ctx]);
+  }, [ctx.onClose]);
 
   const handleEscape = useCallback((e: KeyboardEvent) => {
     ctx.onEscapeKeyDown?.(e);
     if (e.defaultPrevented) return;
     handleClose();
-  }, [ctx, handleClose]);
+  }, [ctx.onEscapeKeyDown, handleClose]);
 
   const handleInteractOutside = useCallback((e: MouseEvent) => {
     ctx.onInteractOutside?.(e);
     if (e.defaultPrevented) return;
     handleClose();
-  }, [ctx, handleClose]);
+  }, [ctx.onInteractOutside, handleClose]);
 
   useEscapeKey(closeOnEscape && ctx.open, handleEscape);
   const clickOutsideRef = useClickOutside(closeOnBackdropClick && ctx.open, handleInteractOutside);
 
   useEffect(() => {
+    if (!ctx.open) return;
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !panelRef.current) return;
+
+      const focusable = getFocusableElements(panelRef.current);
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleTab);
+    return () => document.removeEventListener('keydown', handleTab);
+  }, [ctx.open]);
+
+  useEffect(() => {
+    const transitionId = ++transitionIdRef.current;
+
     if (ctx.open && !prevOpen.current) {
       clearSafetyTimer();
       setRender(true);
       animatingRef.current = true;
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
+          if (transitionId !== transitionIdRef.current || !ctx.open) return;
           if (backdropRef.current && panelRef.current) {
             const anims = animateIn(backdropRef.current, panelRef.current, {
               spring: resolvedSpring,
@@ -123,9 +152,13 @@ export default function ModalContent({
               duration: animationDuration,
             });
             if (anims.length > 0) {
-              Promise.all(anims.map((a) => a.finished)).then(() => {
-                animatingRef.current = false;
-              });
+              Promise.all(anims.map((a) => a.finished))
+                .then(() => {
+                  if (transitionId === transitionIdRef.current) animatingRef.current = false;
+                })
+                .catch(() => {
+                  if (transitionId === transitionIdRef.current) animatingRef.current = false;
+                });
             } else {
               animatingRef.current = false;
             }
@@ -146,8 +179,11 @@ export default function ModalContent({
       });
     } else if (!ctx.open && prevOpen.current) {
       animatingRef.current = true;
+      let didUnmount = false;
 
       const unmount = () => {
+        if (didUnmount || transitionId !== transitionIdRef.current) return;
+        didUnmount = true;
         clearSafetyTimer();
         setRender(resolvedForceMount);
         animatingRef.current = false;
@@ -175,7 +211,18 @@ export default function ModalContent({
     prevOpen.current = ctx.open;
 
     return clearSafetyTimer;
-  }, [ctx.open, resolvedSpring, resolvedAnimation, animationDuration, clearSafetyTimer, resolvedForceMount, ctx]);
+    }, [
+      ctx.open,
+      ctx.onCloseAutoFocus,
+      ctx.finalFocusRef,
+      ctx.initialFocusRef,
+      ctx.triggerRef,
+      resolvedSpring,
+      resolvedAnimation,
+      animationDuration,
+      clearSafetyTimer,
+      resolvedForceMount,
+    ]);
 
   useEffect(() => {
     if (!resolvedPreventScroll || typeof document === 'undefined') return;

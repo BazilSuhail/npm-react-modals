@@ -1,6 +1,6 @@
 {
   "name": "entity-react-modals",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Zero-dependency React modal library with spring physics animations via WAAPI",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -19,7 +19,11 @@
     },
     "./styles.css": "./dist/styles.css"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/index.cjs",
+    "./dist/styles.css"
+  ],
   "files": [
     "dist"
   ],

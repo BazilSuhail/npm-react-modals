@@ -1,4 +1,4 @@
-import { useState, useCallback, useId, useRef, type ReactNode, type RefObject, type CSSProperties } from 'react';
+import { useState, useCallback, useId, useMemo, useRef, type ReactNode, type RefObject, type CSSProperties } from 'react';
 import { ModalContext, type ModalContextValue } from './ModalContext';
 import type { SpringPreset, SpringConfig, AnimationVariant } from './spring';
 
@@ -76,7 +76,7 @@ export default function Modal({
     }
   }, [isControlled, onOpenChange]);
 
-  const value: ModalContextValue = {
+  const value = useMemo<ModalContextValue>(() => ({
     open,
     onClose,
     onOpen,
@@ -101,7 +101,29 @@ export default function Modal({
     setLabelledById,
     setDescribedById,
     triggerRef,
-  };
+  }), [
+    open,
+    onClose,
+    onOpen,
+    spring,
+    animation,
+    backdropColor,
+    backdropBlur,
+    size,
+    animationDuration,
+    preventScroll,
+    forceMount,
+    zIndex,
+    initialFocusRef,
+    finalFocusRef,
+    onOpenAutoFocus,
+    onCloseAutoFocus,
+    onEscapeKeyDown,
+    onInteractOutside,
+    dialogId,
+    labelledById,
+    describedById,
+  ]);
 
   const content = <ModalContext.Provider value={value}>{children}</ModalContext.Provider>;
 

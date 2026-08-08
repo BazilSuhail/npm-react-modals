@@ -14,7 +14,7 @@ export default defineConfig({
   clean: true,
   external: ['react', 'react-dom'],
   treeshake: true,
-  minify: false,
+  minify: true,
   outExtension({ format }) {
     if (format === 'esm') return { js: '.js' };
     return { js: '.cjs' };

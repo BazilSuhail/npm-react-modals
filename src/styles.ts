@@ -21,6 +21,10 @@ export const styles = `
   opacity: 0;
 }
 
+.rm-backdrop[data-state="closed"] {
+  pointer-events: none;
+}
+
 .rm-panel {
   position: relative;
   z-index: 9999;
@@ -33,6 +37,10 @@ export const styles = `
   transform: scale(0.95);
   display: flex;
   flex-direction: column;
+}
+
+.rm-panel[data-state="closed"] {
+  pointer-events: none;
 }
 
 .rm-panel--sm { max-width: 400px; }

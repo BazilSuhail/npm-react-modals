@@ -1,8 +1,13 @@
-import { cloneElement, isValidElement, useCallback, type ReactNode } from 'react';
+import { cloneElement, isValidElement, useCallback, type MouseEvent, type MutableRefObject, type ReactNode, type Ref } from 'react';
 import { useModalContext } from './ModalContext';
 
 export interface ModalTriggerProps {
   children: ReactNode;
+}
+
+function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
+  if (typeof ref === 'function') ref(value);
+  else if (ref) (ref as MutableRefObject<T | null>).current = value;
 }
 
 export default function ModalTrigger({ children }: ModalTriggerProps) {
@@ -22,12 +27,19 @@ export default function ModalTrigger({ children }: ModalTriggerProps) {
     return <button onClick={onOpen} {...triggerProps}>{children}</button>;
   }
 
+  const child = children as React.ReactElement<Record<string, unknown>>;
+  const existingRef = (child as React.ReactElement & { ref?: Ref<HTMLButtonElement> }).ref;
+  const existingOnClick = child.props.onClick;
+
   return cloneElement(children as React.ReactElement<Record<string, unknown>>, {
     ...triggerProps,
-    onClick: (e: React.MouseEvent) => {
-      onOpen();
-      const existing = (children as React.ReactElement<Record<string, unknown>>).props.onClick;
-      if (typeof existing === 'function') existing(e);
+    ref: (el: HTMLButtonElement | null) => {
+      setTriggerRef(el);
+      assignRef(existingRef, el);
+    },
+    onClick: (e: MouseEvent) => {
+      if (typeof existingOnClick === 'function') existingOnClick(e);
+      if (!e.defaultPrevented) onOpen();
     },
   });
 }
