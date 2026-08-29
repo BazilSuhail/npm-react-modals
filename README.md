@@ -3,8 +3,11 @@
 [![npm version](https://img.shields.io/npm/v/entity-react-modals.svg)](https://www.npmjs.com/package/entity-react-modals)
 [![npm downloads](https://img.shields.io/npm/dm/entity-react-modals.svg)](https://www.npmjs.com/package/entity-react-modals)
 [![license](https://img.shields.io/npm/l/entity-react-modals.svg)](https://github.com/BazilSuhail/npm-react-modals/blob/main/LICENSE)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/entity-react-modals)](https://bundlephobia.com/package/entity-react-modals)
-[![typescript](https://img.shields.io/badge/typescript-ready-blue.svg)](https://www.typescriptlang.org/)
+[![types](https://img.shields.io/badge/types-typescript-blue.svg)](https://www.typescriptlang.org/)
+[![zero deps](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)]()
+[![tree shakable](https://img.shields.io/badge/tree--shaking-yes-brightgreen.svg)]()
+[![react](https://img.shields.io/badge/react-18%2B-61dafb.svg)](https://react.dev/)
+[![bundle size](https://img.shields.io/bundlejs/size/entity-react-modals?label=min%2Bgzip)](https://bundlejs.com/?q=entity-react-modals)
 
 Zero-dependency React modal library with spring physics animations powered by the Web Animations API.
 
@@ -20,7 +23,8 @@ Zero-dependency React modal library with spring physics animations powered by th
 - Controlled and uncontrolled modes
 - Portal-rendered, accessible, and tree-shakable
 
-<video src="https://raw.githubusercontent.com/Lord-Entity/Bazil-Suhail-Repos/main/react-modals.mp4" autoplay loop muted playsinline disablePictureInPicture style="pointer-events: none; width: 100%;"></video>
+
+<img width="800" height="382" alt="entity-react-modal" src="https://github.com/user-attachments/assets/cf5b1926-ccbc-4d28-b30c-4b721d1eb31a" />
 
 ## Install
 
